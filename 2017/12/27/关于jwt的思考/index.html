@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+      
+    
+    
+      
+    
+  <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+  <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-flash.min.css" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+  <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+  
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.2/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="jwt,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Layne" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="关于jwt的思考jwt是个做用户权限认证的方案，科普的内容参考相关文档吧，这里提出几个关于jwt的思考：  现有项目架构：12pc项目-&amp;gt;pc服务器-&amp;gt;api服务器app项目-&amp;gt;api服务器 jwt是否需要服务器存储用户状态按照jwt的思路，服务端是不需要存储用户状态的，只要有秘钥+过期时间就可以实现用户的认证和过期，至于读库vs加解密验证哪个过程对服务器的压力更大，这个可能需">
+<meta name="keywords" content="jwt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于jwt的思考">
+<meta property="og:url" content="https://gengxuelei.github.io/2017/12/27/关于jwt的思考/index.html">
+<meta property="og:site_name" content="Layne">
+<meta property="og:description" content="关于jwt的思考jwt是个做用户权限认证的方案，科普的内容参考相关文档吧，这里提出几个关于jwt的思考：  现有项目架构：12pc项目-&amp;gt;pc服务器-&amp;gt;api服务器app项目-&amp;gt;api服务器 jwt是否需要服务器存储用户状态按照jwt的思路，服务端是不需要存储用户状态的，只要有秘钥+过期时间就可以实现用户的认证和过期，至于读库vs加解密验证哪个过程对服务器的压力更大，这个可能需">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-03-20T06:43:51.537Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关于jwt的思考">
+<meta name="twitter:description" content="关于jwt的思考jwt是个做用户权限认证的方案，科普的内容参考相关文档吧，这里提出几个关于jwt的思考：  现有项目架构：12pc项目-&amp;gt;pc服务器-&amp;gt;api服务器app项目-&amp;gt;api服务器 jwt是否需要服务器存储用户状态按照jwt的思路，服务端是不需要存储用户状态的，只要有秘钥+过期时间就可以实现用户的认证和过期，至于读库vs加解密验证哪个过程对服务器的压力更大，这个可能需">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://gengxuelei.github.io/2017/12/27/关于jwt的思考/">
+
+
+
+
+
+<!--online connect-->
+
+  <script>(function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/19ca4a67.js","daovoice")</script>
+  <script>
+    daovoice('init', {
+      app_id: "19ca4a67"
+    });
+    daovoice('update');
+  </script>
+
+  <title>关于jwt的思考 | Layne</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    <a href="https://github.com/gengxuelei" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a> 
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Layne</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://gengxuelei.github.io/2017/12/27/关于jwt的思考/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Layne">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Layne">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">关于jwt的思考</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-27T14:16:41+08:00">
+                2017-12-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/后端/" itemprop="url" rel="index">
+                    <span itemprop="name">后端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/12/27/关于jwt的思考/" class="leancloud_visitors" data-flag-title="关于jwt的思考">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+                 <span>℃</span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,375 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <!--<span class="post-meta-item-text">阅读时长 &asymp;</span>-->
+                  <span class="post-meta-item-text">阅读时长 </span>
+                
+                <span title="阅读时长">
+                  8 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>关于jwt的思考<br>jwt是个做用户权限认证的方案，科普的内容参考相关文档吧，这里提出几个关于jwt的思考：</p>
+</blockquote>
+<p><strong>现有项目架构：</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pc项目-&gt;pc服务器-&gt;api服务器</span><br><span class="line">app项目-&gt;api服务器</span><br></pre></td></tr></table></figure></p>
+<h2 id="jwt是否需要服务器存储用户状态"><a href="#jwt是否需要服务器存储用户状态" class="headerlink" title="jwt是否需要服务器存储用户状态"></a>jwt是否需要服务器存储用户状态</h2><p>按照jwt的思路，服务端是不需要存储用户状态的，只要有秘钥+过期时间就可以实现用户的认证和过期，至于读库vs加解密验证哪个过程对服务器的压力更大，这个可能需要对比测试，但从原理和常识来讲，存库读库的成本应该更高一点。无库产生的加解密开销相对于读写库应该是非常小的，而且无库可以轻松做到跨服务器的认证。</p>
+<h2 id="jwt方案中token的安全问题"><a href="#jwt方案中token的安全问题" class="headerlink" title="jwt方案中token的安全问题"></a>jwt方案中token的安全问题</h2><p>两个安全问题：</p>
+<a id="more"></a>
+<ul>
+<li><p>token泄露，泄露一般存在两个地方，1是传输层，2是客户端。先考虑传输层：http被窃听，或者https被破解（https的安全性这里不做讨论），那么如果token在传输层被拦截，传统的cookie存储的sessionId也有一样的问题。再说客户端，一样的情况，如果cookie可以被窃取，token也没办法解决这个问题。已经做过的测试是：拦截到cookie后，把cookie放在另一台电脑上也是可以使用的，这个跟token是一样的。</p>
+</li>
+<li><p>还有一种情况是重放攻击，http请求被拦截重放，这个安全性对于cookie和jwt是一样的，避免这个问题需要配合其他手段，但基本很难避免。</p>
+</li>
+</ul>
+<p><strong>综上，jwt碰到的安全问题跟传统方式一样。</strong></p>
+<h2 id="jwt如何解决续签问题"><a href="#jwt如何解决续签问题" class="headerlink" title="jwt如何解决续签问题"></a>jwt如何解决续签问题</h2><p>传统的cookie的续签方案一般都是框架自带的，session有效期30分钟，30分钟内如果有访问，session有效期被延长30分钟。那么jwt是怎么实现的呢，细节没看完，不过基本的逻辑是频繁重签名（不知道为什么有人这么干，开销应该不小，而且问题挺多），或者是有效期30分钟，服务器发现token要过期了，提前三分钟重签并返回新的token，客户端每次请求都检测新旧token，如果不一致更新本地token（这个可以放在http的请求预处理里，复杂度和开销都不大）。关于新token的发放导致旧token有效期内的访问失效的问题参见这里的<a href="https://segmentfault.com/q/1010000002449556" target="_blank" rel="noopener">token新旧更替问题讨论</a> 。这种方案就可以实现浏览器里传统cookie的续签需求，以及app7天内登陆就可以持续刷新登陆状态的问题（app比较特殊，每天第一次访问时刷新一下token）。</p>
+<h2 id="jwt如何解决注销问题"><a href="#jwt如何解决注销问题" class="headerlink" title="jwt如何解决注销问题"></a>jwt如何解决注销问题</h2><p>好了，jwt最大的问题来了，怎么注销？先看传统的session是怎么注销的：用户点击退出，调用后台退出接口，也就是session注销接口，依托于后台的状态更新。那么服务端做的呢，如果是用文件或者数据库存储的，那么通过删记录是可以后台强制踢出的，放在内存里就不要想了（如果用户量大了放内存的话服务器也吃不消，放文件里io太频繁基本也不靠谱，还好有了Redis）。jwt最大的问题就在于后台没有存储用户状态，用户退出的话只是客户端删掉了token，然而此token在有效期内还是有效的，也就是说如果token泄露的话就麻烦了，不过token泄露的问题已经在上面讲过了，和cookie是同一个问题。那么最麻烦的就是怎么让一个token在用户注销后失效，以及后台强制退出，这个jwt是没办法的，因为jwt的无状态和用户状态维护是个矛盾冲突的话题。如果要解决就要建立一个黑名单，也就是把用户注销后的token放到redis里，然后每次校验黑名单（这里还是用到了数据库），</p>
+<h2 id="使用jwt-Redis黑名单的方案"><a href="#使用jwt-Redis黑名单的方案" class="headerlink" title="使用jwt+Redis黑名单的方案"></a>使用jwt+Redis黑名单的方案</h2><p>接上个问题，jwt推崇的无状态和跨服务器认证在数据库的出现后，貌似没有任何优势，真的没有优势吗？也不全是，至少有两个小优势，第一，存储黑名单（也就是注销后的用户或者黑户）比起存储登录之后的用户这个量级都是相当小的，存储量下降&amp;读取速度提高。第二个优势是app和pc能共用同一套认证机制，也就意味着前后端彻底的分离，不必再为cookie和session认证单独搭一个服务器。</p>
+<h2 id="用了jwt之后html服务怎么提供呢"><a href="#用了jwt之后html服务怎么提供呢" class="headerlink" title="用了jwt之后html服务怎么提供呢"></a>用了jwt之后html服务怎么提供呢</h2><p>对于前后端分离的项目来说，pc服务器的两个任务1是做认证（jwt已经解决），2是提供html服务。html服务可以交给nginx或者放到cdn，无论哪个方案都比tomcat之类的静态资源处理能力更强大，也就是说html和js等静态资源全部交给静态资源服务器来处理。那么安全问题又来了，怎么对文件做权限控制呢？对于一个前后端分离的项目来说，html一般不会嵌套后端的代码，所以html没有所谓的安全问题，换句话说html里根本没有任何有价值的内容。对于js来说，里面包含了业务逻辑，实际上对js做限制也是没有任何意义的，因为前端的代码是暴露给客户端的，即便控制，黑客登录之后也是能看到你的代码的，惟一能做的就是压缩混淆，把压缩后的代码放到线上，源码不放到线上，最大程度增加通过阅读js读取业务逻辑的难度（实际意义也不大，尤其对于有些公司压根连压缩这一步都不做的，更没有这个问题的顾虑了）。那么也就是说前后端分离的项目里html（没有后端代码嵌入）和js是没有安全的考虑必要的，真正要考虑的大概也就是图片的防盗链和pdf等静态资源的处理吧，这个因为对于后端不是很熟悉所以不做深入讨论，对于pdf等资源能想到的也就是通过需要授权的接口去拿pdf的路径吧。</p>
+<h2 id="到底要不要数据库"><a href="#到底要不要数据库" class="headerlink" title="到底要不要数据库"></a>到底要不要数据库</h2><p>如果不考虑用户注销后一定要token失效和强制退出需求的话，是不需要数据库的，即便加上redis对于传统方案来说也是有上文提到的两个优势。而且其实注销后一定要token失效主要也是考虑token泄露的问题（见上文），所以如果有踢出用户登录需求的话，还是要有数据库做黑名单存储的，一旦用户被拉入黑名单，就要立马停掉用户的签名发放，所以这个问题并不单单是认证的问题，还有签名发放的问题。</p>
+<h2 id="用户认证的终极解决方案（跨服务器）"><a href="#用户认证的终极解决方案（跨服务器）" class="headerlink" title="用户认证的终极解决方案（跨服务器）"></a>用户认证的终极解决方案（跨服务器）</h2><p>前提就是跨服务，实际上jwt本身已经实现了跨服务（无状态），既然服务端不存储用户状态，只要多个服务器之间使用共同的秘钥和加密方案就可以实现x.abc.com里登录之后在y.abc.com那台服务器做登录认证。但是问题上面也说了，如果不考虑注销和强制退出的情况的话，这个话题也就到处为止了。但是如果完美主义呢？当然还是要实现这两个功能，也就是要有黑名单服务器，或者说认证服务器auth.abc.com，无论x.abc.com还是y.abc.com里登录或者注销都要先通过auth.abc.com，但是带来的读写不一致和额外的认证开销问题大概也是一个历史性难题吧。或许也可以参考Oauth2.0的方案，做隐式认证。不存储用户的状态的话，jwt跨服务器应该是个比较简单的解决方案吧，但如果一个公司有跨服务器需求的话，那么规模之大，里面的后端童鞋应该有更为专业的方案吧，欢迎分享。此段不专业莫要踩我。</p>
+<hr>
+<h2 id="结论："><a href="#结论：" class="headerlink" title="结论："></a>结论：</h2><p>上文阐述了作为一个卑微的前端能想到的jwt的问题和思考，总结来说，使用jwt可以实现真正的前后端分离，浏览器可以和app用一样的认证机制，无论对服务器的搭建还是服务器开销都是不错的优化，至于黑名单的设置，这个看需求吧。</p>
+<hr>
+<p><strong>彩蛋</strong></p>
+<blockquote>
+<p>为什么会有彩蛋呢，因为结论里不能说太多废话，就搁这里说了，jwt主要解决了浏览器和app共用一个服务器的问题，也就是少了一个pc服务器。<br><br>有看客就要问了，那你怎么看node呢，ssr？pwa？字节码？<br><br>这个当然要且看下回分解了️️</p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+       <div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">------------- end -------------</div>
+    
+</div> 
+    
+
+    <!--版权声明-->
+    
+      <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  <p><span>本文标题:</span><a href="/2017/12/27/关于jwt的思考/">关于jwt的思考</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 Layne 的个人博客">Layne</a></p>
+  <p><span>发布时间:</span>2017年12月27日 - 14:12</p>
+  <p><span>最后更新:</span>2019年03月20日 - 14:03</p>
+  <p><span>原始链接:</span><a target="_blank" href="https://gengxuelei.github.io/2017/12/27/关于jwt的思考/" title="关于jwt的思考">https://gengxuelei.github.io/2017/12/27/关于jwt的思考/</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://gengxuelei.github.io/2017/12/27/关于jwt的思考/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    clipboard.on('success', function(){
+      alert('复制成功');
+    });
+</script>
+
+
+      </div>
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>您的支持将鼓励我继续创作！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/imgs/pay/wechatpay.jpg" alt="Layne 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/imgs/pay/alipay.jpg" alt="Layne 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jwt/" rel="tag"># jwt</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/27/Linux安装配置vsftpd/" rel="next" title="Linux安装配置vsftpd">
+                <i class="fa fa-chevron-left"></i> Linux安装配置vsftpd
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/27/git小记/" rel="prev" title="git小记">
+                git小记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </div></article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.png" alt="Layne">
+            
+              <p class="site-author-name" itemprop="name">Layne</p>
+              <p class="site-description motion-element" itemprop="description">生活就像<br>坡地上的蒲公英，<br>无奈的苦涩中总有些幽香</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/gengxuelei" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://www.jianshu.com/u/c93daa723718" target="_blank" title="简书">
+                    
+                      <i class="fa fa-fw fa-heartbeat"></i>简书</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://segmentfault.com/u/gengxuelei" target="_blank" title="SegmentFault">
+                    
+                      <i class="fa fa-fw fa-meh-o"></i>SegmentFault</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://blog.csdn.net/gengxuelei" target="_blank" title="csdn">
+                    
+                      <i class="fa fa-fw fa-crosshairs"></i>csdn</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://juejin.im/user/55d8a58d60b2f3a9d4bdd124" target="_blank" title="掘金">
+                    
+                      <i class="fa fa-fw fa-spinner"></i>掘金</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:xueleipc@163.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.uisdc.com/" title="优设" target="_blank">优设</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.zhangxinxu.com/" title="张鑫旭" target="_blank">张鑫旭</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.alloyteam.com/nav/" title="Web前端导航" target="_blank">Web前端导航</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.36zhen.com/t?id=3448" title="前端书籍" target="_blank">前端书籍</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://ife.baidu.com/" title="百度前端技术学院" target="_blank">百度前端技术学院</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://wf.uisdc.com/cn/" title="google前端开发基础" target="_blank">google前端开发基础</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#jwt是否需要服务器存储用户状态"><span class="nav-number">1.</span> <span class="nav-text">jwt是否需要服务器存储用户状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jwt方案中token的安全问题"><span class="nav-number">2.</span> <span class="nav-text">jwt方案中token的安全问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jwt如何解决续签问题"><span class="nav-number">3.</span> <span class="nav-text">jwt如何解决续签问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jwt如何解决注销问题"><span class="nav-number">4.</span> <span class="nav-text">jwt如何解决注销问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用jwt-Redis黑名单的方案"><span class="nav-number">5.</span> <span class="nav-text">使用jwt+Redis黑名单的方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用了jwt之后html服务怎么提供呢"><span class="nav-number">6.</span> <span class="nav-text">用了jwt之后html服务怎么提供呢</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#到底要不要数据库"><span class="nav-number">7.</span> <span class="nav-text">到底要不要数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用户认证的终极解决方案（跨服务器）"><span class="nav-number">8.</span> <span class="nav-text">用户认证的终极解决方案（跨服务器）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论："><span class="nav-number">9.</span> <span class="nav-text">结论：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heartbeat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Layne</span>
+</div>
+
+
+<div class="powered-by">
+<i class="fa fa-user-md"></i><span id="busuanzi_container_site_uv">
+  访问用户：<span id="busuanzi_value_site_uv"></span>
+</span>
+</div>
+
+<div class="powered-by">
+<i class="fa fa-eye"></i>
+<span id="busuanzi_container_site_pv">
+    访问量：<span id="busuanzi_value_site_pv"></span>
+</span>
+</div>
+
+<div class="theme-info">
+  <i class="fa fa-pencil"></i>
+  <span class="post-count">博客全站共 8.5k 字</span>
+</div>
+
+<!--
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io" rel="external nofollow">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next" rel="external nofollow">
+    NexT.Gemini
+  </a>
+</div>
+-->
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+    
+      
+  
+  <script type="text/javascript" color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/jquery/2.1.3/jquery.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/jquery_lazyload/1.9.7/jquery.lazyload.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/velocity/1.2.1/velocity.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/velocity/1.2.1/velocity.ui.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.pack.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("uWVW8mTpKpNTQyyDIcwSUH8B-gzGzoHsz", "J5b17ku6Kl9QiPr7e9OQDmug");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/src/love.js"></script> 
+  
+<div id="hexo-helper-live2d">
+  <canvas id="live2dcanvas" width="150" height="300"></canvas>
+</div>
+<style>
+  #live2dcanvas{
+    position: fixed;
+    width: 150px;
+    height: 300px;
+    opacity:0.7;
+    right: 0px;
+    z-index: 999;
+    pointer-events: none;
+    bottom: -20px;
+  }
+</style>
+<script type="text/javascript" src="//cdn.bootcss.com/device.js/0.2.7/device.min.js"></script>
+<script type="text/javascript">
+const loadScript = function loadScript(c,b){var a=document.createElement("script");a.type="text/javascript";"undefined"!=typeof b&&(a.readyState?a.onreadystatechange=function(){if("loaded"==a.readyState||"complete"==a.readyState)a.onreadystatechange=null,b()}:a.onload=function(){b()});a.src=c;document.body.appendChild(a)};
+(function(){
+  if((typeof(device) != 'undefined') && (device.mobile())){
+    var trElement = document.getElementById('hexo-helper-live2d');
+    trElement.parentNode.removeChild(trElement);
+    return;
+  }else
+    if (typeof(device) === 'undefined') console.error('Cannot find current-device script.');
+  loadScript("/live2d/script.js", function(){loadlive2d("live2dcanvas", "/live2d/assets/koharu.model.json", 0.5);});
+})();
+</script>
+
+</body>
+</html>
